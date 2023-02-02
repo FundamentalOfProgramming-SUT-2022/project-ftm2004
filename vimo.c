@@ -3,12 +3,12 @@
 #include <io.h>
 #include <sys/stat.h>
 
-void eror(char a[]);
+void error(char a[]);
 int createfile();
 void createfilewithstr(char* faddress,char* str);
 int isFileExists(const char *path);
 int validdir(char a[]);
-
+int cat_operation(char fileaddress[]);
 int MAX = 1000;
 
 int getRest() {
@@ -16,8 +16,12 @@ int getRest() {
         char c = getchar();
         if(c == '\n') return i;
     }
-
 }
+int ar();
+FILE *command_file;
+int is_ar = 0;
+char ar_result[10000];
+
 
 int main() {
     while(1) {
@@ -30,6 +34,9 @@ int main() {
         if (!strcmp(command, "insertstr")) {
             insertstr();
         }
+        if (!strcmp(command, "cat")) {
+            cat();
+        }
 
     }
 }
@@ -41,7 +48,7 @@ int isFileExists(const char *path)
 
     return 1;
 }
-void eror(char a[]) {
+void error(char a[]) {
     printf("%s\n",a);
 }
 int createfile() {
@@ -49,7 +56,7 @@ int createfile() {
     for(int i = 0; i < 1000; i++) inp[i] = b[i] = NULL;
     scanf("%s", inp);
     if(strcmp(inp, "--file")) {
-        eror("F!");
+        error("F!");
         getRest();
         return -1;
     }
@@ -104,21 +111,21 @@ int insertstr() {
     //insertstr –file /root/dir1/dir2/file.txt –str Salam –pos 2:5
     scanf("%s", inp);
     if(strcmp(inp, "--file")) {
-        eror("F!");
+        error("F!");
         getRest();
         return -1;
     }
     scanf("%s", path);
     scanf("%s", inp);
     if(strcmp(inp, "--str")) {
-        eror("F!");
+        error("F!");
         getRest();
         return -1;
     }
     scanf("%s", str);
     scanf("%s", inp);
     if(strcmp(inp, "--pos")) {
-        eror("!F");
+        error("!F");
         getRest();
         return -1;
     }
@@ -127,7 +134,7 @@ int insertstr() {
     //printf("%d+%d\n", line, col);
     FILE* file = fopen(path, "r");
     if(file == NULL) {
-        eror("not valid path");
+        error("not valid path");
         getRest();
         return -1;
     }
@@ -154,7 +161,7 @@ int insertstr() {
 
     }
     if(check == 0) {
-        eror("not valid pos");
+        error("not valid pos");
         getRest();
         return -1;
     }
@@ -165,6 +172,66 @@ int insertstr() {
     return 0;
 }
 //insertstr --file root/ah.txt --str khoobi --pos 1:5
+
+
+
+
+
+int cat(){
+    int catc=2;
+    char fileaddress[MAX];
+    int valid_input = file_input(fileaddress, catc);
+
+    if (valid_input == -1)
+    {
+        return -1;
+    }
+
+    track_changes(fileaddress);
+
+    int valid_action = cat_operation(fileaddress);
+    if (valid_action == -1)
+    {
+        undo_action(fileaddress);
+        return -1;
+    }
+
+    return 0;
+}
+
+int cat_operation(char fileaddress[])
+{
+    // does directory exist
+    if (!dir_exist(fileaddress))
+    {
+        error("directory doesn't exist");
+        return -1;
+    }
+
+    // does file exist
+    FILE *f = fopen(fileaddress, "r");
+    if (f == NULL)
+    {
+        error("file doesn't exist");
+        getRest();
+        return -1;
+    }
+
+    char line[1000];
+
+    while (fgets(line, 1000, f) != NULL)
+    {
+        if (!is_ar)
+            printf("%s", line);
+        else
+            sprintf(ar_result + strlen(ar_result), line);
+    }
+    if (!is_ar)
+        printf("\n");
+    fclose(f);
+    return 0;
+   }
+
 
 
 
